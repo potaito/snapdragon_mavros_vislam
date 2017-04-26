@@ -1,5 +1,8 @@
 # Snapdragon Flight VISLAM-ROS Sample Code
 
+**NOTE:** THE EXAMPLES DEFINED HERE ARE BASED ON A DEPRECATED RELEASE( mv0.8 ).  PLEASE USE THE CODE ON MASTER BRANCH FOR THE LATEST UPDATES( MV0.9.1 and greater )
+**NOTE:** THE MV0.8 RELEASE WILL NO LONGER BE AVAILABLE FOR DOWNLOAD FROM https://developer.qualcomm.com/sdflight-tools AFTER MAY 4th 2017.
+
 This repo provides the sample code and instructions to run Visual-Inertial Simultaneous Localization And Mapping (VISLAM) as a ROS node on the [Qualcomm Snapdragon Platform](https://developer.qualcomm.com/hardware/snapdragon-flight)<sup>TM</sup>.
 
 This example assumes that you are familiar with ROS framework.  If you are new to ROS, refer to [ROS Start Guide](http://wiki.ros.org/ROS/StartGuide) first to get started.
@@ -85,6 +88,8 @@ Refer to the following [page](https://github.com/ATLFlight/ATLFlightDocs/blob/ma
 * The package name will be mv\<version\>.deb.
 ** Example: *mv0.8.deb*
 * push the deb package to the target and install it.
+
+**NOTE:** THIS IS DEPRECATED RELEASE(mv0.8).  MV0.8 WILL NO LONGER BE AVAILABLE FOR DOWNLOAD AFTER MAY 4th 2017
 
 ```
 adb push mv<version>.deb /home/linaro
