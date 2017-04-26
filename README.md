@@ -1,6 +1,7 @@
 # Snapdragon Flight VISLAM-ROS Sample Code
 
-**NOTE:** THE EXAMPLES DEFINED HERE ARE BASED ON A DEPRECATED RELEASE( mv0.8 ).  PLEASE USE THE CODE ON MASTER BRANCH FOR THE LATEST UPDATES( MV0.9.1 and greater )
+**NOTE:** THE EXAMPLES DEFINED HERE ARE BASED ON A DEPRECATED RELEASE( mv0.8 ).  PLEASE USE THE EXAMPLES ON MASTER BRANCH FOR THE LATEST UPDATES( MV0.9.1 and greater )
+
 **NOTE:** THE MV0.8 RELEASE WILL NO LONGER BE AVAILABLE FOR DOWNLOAD FROM https://developer.qualcomm.com/sdflight-tools AFTER MAY 4th 2017.
 
 This repo provides the sample code and instructions to run Visual-Inertial Simultaneous Localization And Mapping (VISLAM) as a ROS node on the [Qualcomm Snapdragon Platform](https://developer.qualcomm.com/hardware/snapdragon-flight)<sup>TM</sup>.
