@@ -169,7 +169,7 @@ vision_pose:
 
 # vision_speed_estimate
 vision_speed:
-  listen_twist: false
+  listen_twist: true
 
 # vibration
 vibration:

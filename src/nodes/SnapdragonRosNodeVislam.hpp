@@ -105,6 +105,7 @@ private:
   ros::Publisher pub_vislam_pose_;
   ros::Publisher pub_vislam_pose_cov_;
   ros::Publisher pub_vislam_odometry_;
+  ros::Publisher pub_vislam_twist_;
   ros::Publisher pub_vislam_tbc_estimate_;
   ros::Publisher pub_vislam_rbc_estimate_x_;
   ros::Publisher pub_vislam_rbc_estimate_y_;

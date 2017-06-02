@@ -36,6 +36,7 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -46,6 +47,7 @@ Snapdragon::RosNode::Vislam::Vislam( ros::NodeHandle nh ) : nh_(nh)
   pub_vislam_pose_ = nh_.advertise<geometry_msgs::PoseStamped>("vislam/pose",1);
   pub_vislam_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("vislam/pose_cov",1);
   pub_vislam_odometry_ = nh_.advertise<nav_msgs::Odometry>("vislam/odometry",1);
+  pub_vislam_twist_ = nh_.advertise<geometry_msgs::TwistStamped>("vislam/twist",1);
   pub_vislam_tbc_estimate_ = nh_.advertise<geometry_msgs::Vector3>("vislam/tbc",1);
   pub_vislam_rbc_estimate_x_ = nh_.advertise<geometry_msgs::Vector3>("vislam/rbc_x", 1);
   pub_vislam_rbc_estimate_y_ = nh_.advertise<geometry_msgs::Vector3>("vislam/rbc_y", 1);
@@ -237,11 +239,12 @@ void Snapdragon::RosNode::Vislam::ThreadMain() {
 }
 
 int32_t Snapdragon::RosNode::Vislam::PublishVislamData( mvVISLAMPose& vislamPose, int64_t vislamFrameId, uint64_t timestamp_ns  ) {
+  const std::string kFrameId = "vislam";
   geometry_msgs::PoseStamped pose_msg;
   ros::Time frame_time;
   frame_time.sec = (int32_t)(timestamp_ns/1000000000UL);
   frame_time.nsec = (int32_t)(timestamp_ns % 1000000000UL);
-  pose_msg.header.frame_id = "vislam";
+  pose_msg.header.frame_id = kFrameId;
   pose_msg.header.stamp = frame_time;
   pose_msg.header.seq = vislamFrameId;
 
@@ -267,36 +270,10 @@ int32_t Snapdragon::RosNode::Vislam::PublishVislamData( mvVISLAMPose& vislamPose
   pose_msg.pose.orientation.w = q.getW();
   pub_vislam_pose_.publish(pose_msg);
   
-  // Publish translation and rotation estimates
-  geometry_msgs::Vector3 tbc_msg;
-  tbc_msg.x = vislamPose.tbc[0];
-  tbc_msg.y = vislamPose.tbc[1];
-  tbc_msg.z = vislamPose.tbc[2];
-  pub_vislam_tbc_estimate_.publish(tbc_msg);
-  
-  geometry_msgs::Vector3 rbc_x_msg;
-  rbc_x_msg.x = vislamPose.Rbc[0][0];
-  rbc_x_msg.y = vislamPose.Rbc[0][1];
-  rbc_x_msg.z = vislamPose.Rbc[0][2];
-  pub_vislam_rbc_estimate_x_.publish(rbc_x_msg);
-  
-  geometry_msgs::Vector3 rbc_y_msg;
-  rbc_y_msg.x = vislamPose.Rbc[1][0];
-  rbc_y_msg.y = vislamPose.Rbc[1][1];
-  rbc_y_msg.z = vislamPose.Rbc[1][2];
-  pub_vislam_rbc_estimate_y_.publish(rbc_y_msg);
-  
-  geometry_msgs::Vector3 rbc_z_msg;
-  rbc_z_msg.x = vislamPose.Rbc[2][0];
-  rbc_z_msg.y = vislamPose.Rbc[2][1];
-  rbc_z_msg.z = vislamPose.Rbc[2][2];
-  pub_vislam_rbc_estimate_z_.publish(rbc_z_msg);
-  
-
   //publish the odometry message.
   nav_msgs::Odometry odom_msg;
   odom_msg.header.stamp = frame_time;
-  odom_msg.header.frame_id = "vislam";
+  odom_msg.header.frame_id = kFrameId;
   odom_msg.pose.pose = pose_msg.pose;
   odom_msg.twist.twist.linear.x = vislamPose.velocity[0];
   odom_msg.twist.twist.linear.y = vislamPose.velocity[1];
@@ -318,6 +295,13 @@ int32_t Snapdragon::RosNode::Vislam::PublishVislamData( mvVISLAMPose& vislamPose
   pose_cov_msg.header = odom_msg.header;
   pose_cov_msg.pose = odom_msg.pose;
   pub_vislam_pose_cov_.publish(pose_cov_msg);
+  
+  // Publish speed vector
+  geometry_msgs::TwistStamped twist_msg;
+  twist_msg.header.stamp = frame_time;
+  twist_msg.header.frame_id = kFrameId;
+  twist_msg.twist = odom_msg.twist.twist;
+  pub_vislam_twist_.publish(twist_msg);
 
   // compute transforms
   std::vector<geometry_msgs::TransformStamped> transforms;
@@ -330,7 +314,7 @@ int32_t Snapdragon::RosNode::Vislam::PublishVislamData( mvVISLAMPose& vislamPose
   transform.transform.rotation.z = pose_msg.pose.orientation.z;
   transform.transform.rotation.w = pose_msg.pose.orientation.w;
   transform.child_frame_id = "base_link_vislam";
-  transform.header.frame_id = "vislam";
+  transform.header.frame_id = kFrameId;
   transform.header.stamp = frame_time;
 
   // collect transforms
@@ -338,5 +322,43 @@ int32_t Snapdragon::RosNode::Vislam::PublishVislamData( mvVISLAMPose& vislamPose
 
   // broadcast transforms
   static tf2_ros::TransformBroadcaster br;
-  br.sendTransform(transforms);     
+  br.sendTransform(transforms);   
+  
+  
+  // Publish translation and rotation estimates
+  if (pub_vislam_tbc_estimate_.getNumSubscribers()>0)
+  {
+    geometry_msgs::Vector3 tbc_msg;
+    tbc_msg.x = vislamPose.tbc[0];
+    tbc_msg.y = vislamPose.tbc[1];
+    tbc_msg.z = vislamPose.tbc[2];
+    pub_vislam_tbc_estimate_.publish(tbc_msg);
+  }
+  
+  if (pub_vislam_rbc_estimate_x_.getNumSubscribers()>0)
+  {
+  geometry_msgs::Vector3 rbc_x_msg;
+  rbc_x_msg.x = vislamPose.Rbc[0][0];
+  rbc_x_msg.y = vislamPose.Rbc[0][1];
+  rbc_x_msg.z = vislamPose.Rbc[0][2];
+  pub_vislam_rbc_estimate_x_.publish(rbc_x_msg);
+  }
+  
+  if (pub_vislam_rbc_estimate_y_.getNumSubscribers()>0)
+  {
+  geometry_msgs::Vector3 rbc_y_msg;
+  rbc_y_msg.x = vislamPose.Rbc[1][0];
+  rbc_y_msg.y = vislamPose.Rbc[1][1];
+  rbc_y_msg.z = vislamPose.Rbc[1][2];
+  pub_vislam_rbc_estimate_y_.publish(rbc_y_msg);
+  }
+  
+  if (pub_vislam_rbc_estimate_z_.getNumSubscribers()>0)
+  {
+  geometry_msgs::Vector3 rbc_z_msg;
+  rbc_z_msg.x = vislamPose.Rbc[2][0];
+  rbc_z_msg.y = vislamPose.Rbc[2][1];
+  rbc_z_msg.z = vislamPose.Rbc[2][2];
+  pub_vislam_rbc_estimate_z_.publish(rbc_z_msg);
+  }  
 }
