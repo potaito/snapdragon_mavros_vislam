@@ -1,11 +1,11 @@
 # Snapdragon Flight VISLAM-ROS Sample Code
-This repository is a fork of the VISLAM from ATLFlight/ros-examples, modified to work with the px4 flight stack. The original README can be found in the [ATLFlight/ros-examples](https://github.com/ATLFlight/ros-examples/blob/master/README.md) repository.
+This repository is a fork of the VISLAM from ATLFlight/ros-examples, modified to work with the px4 flight stack and get IMU sensor data from mavros instead of the `imu_app`. The original README can be found in the [ATLFlight/ros-examples](https://github.com/ATLFlight/ros-examples/blob/master/README.md) repository.
 
 ## Preparations
 ### Mavros
 Get the mavros sources into your catkin's source directory by following the instructions from the [mavros git page](https://github.com/mavlink/mavros/tree/master/mavros#source-installation).
 
-**Note**: Step 3 should also include `--rosdistro kinetic` flag.
+**Note**: Step 3 should also include `--rosdistro kinetic` flag (thanks  @Seanmatthews).
 
 ### Other packages
 On a freshly flashed snapdragon, I had to install the following packages
